@@ -1,6 +1,6 @@
 {
-"uuid": "shorturl@sneakybobito.com",
-"name": "Short URL",
-"description": "shortenize your urls",
-"icon": "force-exit"
+	"uuid": "shorturl@sneakybobito.com",
+	"name": "Short URL",
+	"description": "shortenize your urls",
+	"icon": "tray_icon"
 }
