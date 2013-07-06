@@ -22,24 +22,108 @@ const Logger=imports.logger;
 const APPLET_ICON = global.userdatadir + "/applets/shorturl@sneakybobito.com/tray_icon.png";
 
 const shortenizerServices = [
-
+    /*
     {
-        icon : "github-icon",
+        icon : "",
+        name : "Debug",
+        requestPrepareHandler : function(url){
+            return {
+                url : "http://localhost/testshortener.php",
+                params : {
+                    url : url
+                },
+                method : "POST",
+                body: "{rrr:'ffff'}",
+                contentType:"application/x-www-form-urlencoded"
+            }
+        },
+        buildshortLinkHandler : function(message){
+
+
+            return message;
+        }
+
+    },
+    */
+    {
+        icon : "icon-bitly",
+        name : "bit.ly",
+        requestPrepareHandler : function(url){
+            return {
+                url : "https://api-ssl.bitly.com/v3/shorten",
+                params : {
+                    longUrl : url,
+                    access_token : "9d2b313257309107809cfcfe41ba09d013468bef"
+                },
+                method : "GET",
+                contentType:"application/x-www-form-urlencoded"
+            }
+        },
+        buildshortLinkHandler : function(message){
+
+            let jsonmsg = JSON.parse(message);
+
+            return jsonmsg.data.url;
+        }
+
+    },{
+        icon : "icon-google",
+        name : "goo.gl",
+        requestPrepareHandler : function(url){
+            return {
+                url : "https://www.googleapis.com/urlshortener/v1/url",
+                params : {
+                    longUrl : url,
+                    key : "AIzaSyBXJCTPhdQD0X-tS-U1pX2phAJOXi7Ytd4"
+                },
+                method : "POST",
+                body:'{"longUrl": "http://google.com"}',
+                contentType:"application/json"
+            }
+        },
+        buildshortLinkHandler : function(message){
+
+            let jsonmsg = JSON.parse(message);
+
+            return jsonmsg.id;
+        }
+
+    },{
+        icon : "icon-github",
         name : "git.io",
         requestPrepareHandler : function(url){
             return {
                 url : "http://git.io/create",
-                postParams : {
+                params : {
                     url : url
                 },
-                method : "POST"
+                method : "POST",
+                contentType:"application/x-www-form-urlencoded"
             }
         },
         buildshortLinkHandler : function(message){
             return "http://git.io/"+message;
         }
 
-    }
+    },{
+        icon : "icon-tinyurl",
+        name : "tinyurl",
+        requestPrepareHandler : function(url){
+            return {
+                url : "http://tinyurl.com/api-create.php",
+                params : {
+                    url : url,
+                },
+                method : "GET",
+                contentType:"application/octet-stream"
+            }
+        },
+        buildshortLinkHandler : function(message){
+
+            return message;
+        }
+
+    },
 
 ]
 
@@ -70,7 +154,9 @@ MyApplet.prototype = {
             this.menuManager.addMenu(this.menu);
 
 
-
+            /**
+            * CREATE THE MENU ITEMS
+            */
             for(let i=0;i<shortenizerServices.length;i++){
                 let self=this;
                 self.logger.logVerbose(i);
@@ -114,6 +200,7 @@ MyApplet.prototype = {
                 });
                 this.menu.addMenuItem(menuitem);
             }
+            // END OF MENU ITEMS CREATION
 
         }
         catch (e) {
@@ -122,7 +209,9 @@ MyApplet.prototype = {
         }
     },
 
-
+    /**
+    * SHOW A NOTIFICATION
+    */
     showNotify: function(notifyContent){
         let title = notifyContent.title;
         let msg = notifyContent.content;
@@ -146,10 +235,12 @@ MyApplet.prototype = {
 
 
 
+
+
+// A menu item with a label and an icon located in the applet folder
 function ShrtnzrServiceMenu() {
     this._init.apply(this, arguments);
 }
-
 ShrtnzrServiceMenu.prototype = {
     __proto__: PopupMenu.PopupBaseMenuItem.prototype,
 
@@ -157,14 +248,17 @@ ShrtnzrServiceMenu.prototype = {
         PopupMenu.PopupBaseMenuItem.prototype._init.call(this, {});
 
         this.label = new St.Label({ text: label });
-        this.addActor(this.label);
         
         var file = Gio.file_new_for_path( global.userdatadir + "/applets/shorturl@sneakybobito.com/"+icon+".png" );
         var iconFile = new Gio.FileIcon({ file: file });
-        this.addActor(new St.Icon({ gicon: iconFile, icon_size: 32 }));
+        
+        this.addActor(this.label);
+        this.addActor(new St.Icon({ gicon: iconFile, icon_size: 25 }));
     },
 
 };
+
+
 
 function main(metadata, orientation) {
     let myApplet = new MyApplet(orientation);

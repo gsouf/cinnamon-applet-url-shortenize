@@ -47,30 +47,36 @@ Shortenizer.prototype.queryShortenizeService = function(urlToShortenize,successC
 
     this.logger.logVerbose(requestDefinition.url);
 
+
     if(!requestDefinition.url)
         throw "No url available";
 
     if(!requestDefinition.method)
-        requestDefinition.method = requestDefinition.method || (requestDefinition.postParams != undefined ? "POST" : "GET")
+        requestDefinition.method = requestDefinition.method || "GET"
 
-    urlStr=requestDefinition.url;
-
-    if(requestDefinition.method == "POST" && requestDefinition.postParams){
-        urlStr+="?";
+    let paramsStr="";
+    if(requestDefinition.params){
         let i=0;
-        for( let name in requestDefinition.postParams){
+        for( let name in requestDefinition.params){
             if(i>0)
-                urlStr+="&"
-            urlStr+=name+"="+requestDefinition.postParams[name];
-            i++;
+                paramsStr+="&";
+            else
+                i++;
+            paramsStr+=name+"="+Soup.URI.encode(requestDefinition.params[name],"");
+
         }
     }
 
-    this.logger.logVerbose(urlStr);
 
-    let message = Soup.Message.new('POST', urlStr);
+    let message = Soup.Message.new(requestDefinition.method, requestDefinition.url+"?"+paramsStr);
 
-    
+    this.logger.log(requestDefinition.url+"?"+paramsStr);
+
+    let messageBody = requestDefinition.body == undefined ? paramsStr : requestDefinition.body;
+
+   // message.set_request(requestDefinition.contentType,Soup.MemoryUse.COPY,messageBody,messageBody.length);
+
+
 
     this.httpSession.queue_message(message, function(session,message){
 
